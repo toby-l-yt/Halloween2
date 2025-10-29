@@ -1,10 +1,394 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Logo Game Test</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Logo Sequence Game</title>
+    <style>
+        /* Same CSS as before */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .container {
+            max-width: 800px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            font-size: 2.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        .instructions {
+            text-align: center;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            background: rgba(255, 255, 255, 0.15);
+            padding: 1rem;
+            border-radius: 10px;
+        }
+        
+        .logo-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        
+        .logo {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: grab;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+            transition: transform 0.3s, box-shadow 0.3s;
+            user-select: none;
+        }
+        
+        .logo:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .logo img {
+            max-width: 80%;
+            max-height: 80%;
+            border-radius: 8px;
+        }
+        
+        .sequence-container {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 2rem;
+            gap: 1rem;
+        }
+        
+        .sequence-slot {
+            width: 120px;
+            height: 120px;
+            border: 3px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+        
+        .sequence-slot.highlight {
+            border-color: #4cd964;
+            background: rgba(76, 217, 100, 0.2);
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 50px;
+            background: #4cd964;
+            color: white;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        button:active {
+            transform: translateY(1px);
+        }
+        
+        button#reset-btn {
+            background: #ff3b30;
+        }
+        
+        .feedback {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            min-height: 30px;
+            font-weight: bold;
+        }
+        
+        .video-container {
+            display: none;
+            margin-top: 2rem;
+            text-align: center;
+        }
+        
+        video {
+            max-width: 100%;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+        
+        .success-message {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: #4cd964;
+        }
+        
+        @media (max-width: 600px) {
+            .logo-container, .sequence-container {
+                justify-content: center;
+            }
+            
+            .logo, .sequence-slot {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <h1>Hello World!</h1>
-    <p>If you can see this, GitHub Pages is working!</p>
+    <div class="container">
+        <h1>Logo Sequence Game</h1>
+        
+        <div class="instructions">
+            <p>Drag and drop the logos into the sequence slots in the correct order.</p>
+            <p>Once you think you have the right sequence, click "Check Sequence" to verify.</p>
+        </div>
+        
+        <div class="logo-container" id="logo-container">
+            <!-- Logos will be added here by JavaScript -->
+        </div>
+        
+        <div class="sequence-container" id="sequence-container">
+            <!-- Sequence slots will be added here by JavaScript -->
+        </div>
+        
+        <div class="feedback" id="feedback"></div>
+        
+        <div class="controls">
+            <button id="check-btn">Check Sequence</button>
+            <button id="reset-btn">Reset</button>
+        </div>
+        
+        <div class="video-container" id="video-container">
+            <div class="success-message">Congratulations! You solved the puzzle!</div>
+            <video id="reward-video" controls>
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Define logos - REPLACE THESE WITH YOUR ACTUAL LOGOS
+            const logos = [
+                { 
+                    id: 1, 
+                    name: 'Apple', 
+                    // Replace with your logo image URL or path
+                    image: 'https://www.freepnglogos.com/uploads/apple-logo-png/apple-logo-icon-16.png'
+                },
+                { 
+                    id: 2, 
+                    name: 'Google', 
+                    image: 'https://www.freepnglogos.com/uploads/google-logo-png/google-logo-png-webinar-optimizing-for-success-google-business-webinar-13.png'
+                },
+                { 
+                    id: 3, 
+                    name: 'Microsoft', 
+                    image: 'https://www.freepnglogos.com/uploads/microsoft-logo-png-transparent-20.png'
+                },
+                { 
+                    id: 4, 
+                    name: 'Amazon', 
+                    image: 'https://www.freepnglogos.com/uploads/amazon-png-logo-vector/woodland-gardening-amazon-png-logo-vector-8.png'
+                }
+            ];
+            
+            // Correct sequence (change this to set your own correct order)
+            const correctSequence = [1, 2, 3, 4];
+            
+            // DOM elements
+            const logoContainer = document.getElementById('logo-container');
+            const sequenceContainer = document.getElementById('sequence-container');
+            const checkBtn = document.getElementById('check-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const feedback = document.getElementById('feedback');
+            const videoContainer = document.getElementById('video-container');
+            const rewardVideo = document.getElementById('reward-video');
+            
+            // Track current sequence
+            let currentSequence = [null, null, null, null];
+            
+            // Initialize the game
+            function initGame() {
+                // Create logo elements
+                logos.forEach(logo => {
+                    const logoElement = document.createElement('div');
+                    logoElement.className = 'logo';
+                    logoElement.id = `logo-${logo.id}`;
+                    logoElement.draggable = true;
+                    
+                    // Use image if provided, otherwise use colored square
+                    if (logo.image) {
+                        logoElement.innerHTML = `<img src="${logo.image}" alt="${logo.name}" />`;
+                    } else {
+                        logoElement.innerHTML = `<div style="background: ${logo.color}; width: 80px; height: 80px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold;">${logo.name}</div>`;
+                    }
+                    
+                    // Add drag event listeners
+                    logoElement.addEventListener('dragstart', handleDragStart);
+                    
+                    logoContainer.appendChild(logoElement);
+                });
+                
+                // Create sequence slots
+                for (let i = 0; i < 4; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'sequence-slot';
+                    slot.id = `slot-${i}`;
+                    slot.dataset.index = i;
+                    
+                    // Add drop event listeners
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('drop', handleDrop);
+                    slot.addEventListener('dragenter', handleDragEnter);
+                    slot.addEventListener('dragleave', handleDragLeave);
+                    
+                    sequenceContainer.appendChild(slot);
+                }
+                
+                // Add event listeners to buttons
+                checkBtn.addEventListener('click', checkSequence);
+                resetBtn.addEventListener('click', resetGame);
+            }
+            
+            // Drag and drop functions
+            function handleDragStart(e) {
+                e.dataTransfer.setData('text/plain', e.target.id);
+                setTimeout(() => {
+                    e.target.style.opacity = '0.4';
+                }, 0);
+            }
+            
+            function handleDragOver(e) {
+                e.preventDefault();
+            }
+            
+            function handleDrop(e) {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/plain');
+                const draggedElement = document.getElementById(id);
+                const slotIndex = parseInt(e.target.dataset.index);
+                
+                // Reset opacity
+                draggedElement.style.opacity = '1';
+                
+                // Remove highlight
+                e.target.classList.remove('highlight');
+                
+                // If slot already has a logo, return it to logo container
+                if (currentSequence[slotIndex]) {
+                    const existingLogoId = `logo-${currentSequence[slotIndex]}`;
+                    const existingLogo = document.getElementById(existingLogoId);
+                    logoContainer.appendChild(existingLogo);
+                }
+                
+                // Add logo to slot
+                currentSequence[slotIndex] = parseInt(draggedElement.id.split('-')[1]);
+                e.target.appendChild(draggedElement);
+                
+                // Clear feedback
+                feedback.textContent = '';
+            }
+            
+            function handleDragEnter(e) {
+                e.preventDefault();
+                e.target.classList.add('highlight');
+            }
+            
+            function handleDragLeave(e) {
+                e.target.classList.remove('highlight');
+            }
+            
+            // Check if sequence is correct
+            function checkSequence() {
+                // Check if all slots are filled
+                if (currentSequence.includes(null)) {
+                    feedback.textContent = 'Please place logos in all slots first!';
+                    feedback.style.color = '#FF3B30';
+                    return;
+                }
+                
+                // Check if sequence matches
+                const isCorrect = JSON.stringify(currentSequence) === JSON.stringify(correctSequence);
+                
+                if (isCorrect) {
+                    feedback.textContent = 'Correct! Well done!';
+                    feedback.style.color = '#4CD964';
+                    videoContainer.style.display = 'block';
+                    rewardVideo.play();
+                } else {
+                    feedback.textContent = 'Incorrect sequence. Try again!';
+                    feedback.style.color = '#FF3B30';
+                }
+            }
+            
+            // Reset the game
+            function resetGame() {
+                // Clear sequence
+                currentSequence = [null, null, null, null];
+                
+                // Move all logos back to logo container
+                const slots = document.querySelectorAll('.sequence-slot');
+                slots.forEach(slot => {
+                    while (slot.firstChild) {
+                        logoContainer.appendChild(slot.firstChild);
+                    }
+                });
+                
+                // Clear feedback and hide video
+                feedback.textContent = '';
+                videoContainer.style.display = 'none';
+                rewardVideo.pause();
+                rewardVideo.currentTime = 0;
+            }
+            
+            // Initialize the game
+            initGame();
+        });
+    </script>
 </body>
 </html>
