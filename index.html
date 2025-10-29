@@ -1,10 +1,10 @@
 <body>
-    <div class="glitch-text">Haunted Sequence</div>
+    <div class="glitch-text">最後循序</div>
     
     <div class="container">
         <div class="instructions">
-            <p>ARRANGE THE SYMBOLS IN THE CORRECT SEQUENCE TO REVEAL THE MESSAGE...</p>
-            <p class="warning">WARNING: WRONG SEQUENCES MAY HAVE CONSEQUENCES</p>
+            <p>請輸入正確的循序來獲得最終提示</p>
+            <p class="warning">警告：答錯可能會有懲罰</p>
         </div>
         
         <!-- Added form element for better accessibility -->
@@ -26,7 +26,7 @@
         </form>
         
         <div class="video-container" id="video-container">
-            <div class="success-message">ACCESS GRANTED... THE TRUTH AWAITS</div>
+            <div class="success-message">解答成功</div>
             <video id="reward-video" controls>
                 <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
                 Your browser does not support the video tag.
@@ -64,7 +64,7 @@
             ];
             
             // Correct sequence (change this to your desired order)
-            const correctSequence = [1, 2, 3, 4];
+            const correctSequence = [3, 1, 4, 2];
             
             // DOM elements
             const logoContainer = document.getElementById('logo-container');
