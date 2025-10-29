@@ -1,221 +1,266 @@
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Create floating particles
-        createParticles();
+<body>
+    <div class="glitch-text">Haunted Sequence</div>
+    
+    <div class="container">
+        <div class="instructions">
+            <p>ARRANGE THE SYMBOLS IN THE CORRECT SEQUENCE TO REVEAL THE MESSAGE...</p>
+            <p class="warning">WARNING: WRONG SEQUENCES MAY HAVE CONSEQUENCES</p>
+        </div>
         
-        // Define logos - FIXED SYNTAX
-        const logos = [
-            { 
-                id: 1, 
-                name: 'Cult Symbol', 
-                image: 'logo1.png'
-            },
-            { 
-                id: 2, 
-                name: 'Ancient Rune', 
-                image: 'logo2.png'
-            },
-            { 
-                id: 3, 
-                name: 'Mystery Mark', 
-                image: 'logo3.png'
-            },
-            { 
-                id: 4, 
-                name: 'Haunted Icon', 
-                image: 'logo4.png'
-            }
-        ];
+        <!-- Added form element for better accessibility -->
+        <form id="sequence-form" novalidate>
+            <div class="logo-container" id="logo-container">
+                <!-- Logos will be added here by JavaScript -->
+            </div>
+            
+            <div class="sequence-container" id="sequence-container">
+                <!-- Sequence slots will be added here by JavaScript -->
+            </div>
+            
+            <div class="feedback" id="feedback"></div>
+            
+            <div class="controls">
+                <button type="button" id="check-btn" name="check-sequence">VERIFY SEQUENCE</button>
+                <button type="button" id="reset-btn" name="reset-game">RESET</button>
+            </div>
+        </form>
         
-        // Correct sequence (change this to your desired order)
-        const correctSequence = [1, 2, 3, 4];
-        
-        // DOM elements
-        const logoContainer = document.getElementById('logo-container');
-        const sequenceContainer = document.getElementById('sequence-container');
-        const checkBtn = document.getElementById('check-btn');
-        const resetBtn = document.getElementById('reset-btn');
-        const feedback = document.getElementById('feedback');
-        const videoContainer = document.getElementById('video-container');
-        const rewardVideo = document.getElementById('reward-video');
-        
-        // Track current sequence
-        let currentSequence = [null, null, null, null];
-        
-        // Initialize the game
-        function initGame() {
-            // Create logo elements
-            logos.forEach(logo => {
-                const logoElement = document.createElement('div');
-                logoElement.className = 'logo';
-                logoElement.id = `logo-${logo.id}`;
-                logoElement.draggable = true;
+        <div class="video-container" id="video-container">
+            <div class="success-message">ACCESS GRANTED... THE TRUTH AWAITS</div>
+            <video id="reward-video" controls>
+                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+            </video>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Create floating particles
+            createParticles();
+            
+            // Define logos
+            const logos = [
+                { 
+                    id: 1, 
+                    name: 'Cult Symbol', 
+                    image: 'logo1.png'
+                },
+                { 
+                    id: 2, 
+                    name: 'Ancient Rune', 
+                    image: 'logo2.png'
+                },
+                { 
+                    id: 3, 
+                    name: 'Mystery Mark', 
+                    image: 'logo3.png'
+                },
+                { 
+                    id: 4, 
+                    name: 'Haunted Icon', 
+                    image: 'logo4.png'
+                }
+            ];
+            
+            // Correct sequence (change this to your desired order)
+            const correctSequence = [1, 2, 3, 4];
+            
+            // DOM elements
+            const logoContainer = document.getElementById('logo-container');
+            const sequenceContainer = document.getElementById('sequence-container');
+            const checkBtn = document.getElementById('check-btn');
+            const resetBtn = document.getElementById('reset-btn');
+            const feedback = document.getElementById('feedback');
+            const videoContainer = document.getElementById('video-container');
+            const rewardVideo = document.getElementById('reward-video');
+            const sequenceForm = document.getElementById('sequence-form');
+            
+            // Track current sequence
+            let currentSequence = [null, null, null, null];
+            
+            // Initialize the game
+            function initGame() {
+                // Create logo elements
+                logos.forEach(logo => {
+                    const logoElement = document.createElement('div');
+                    logoElement.className = 'logo';
+                    logoElement.id = `logo-${logo.id}`;
+                    logoElement.draggable = true;
+                    logoElement.setAttribute('aria-label', `Drag ${logo.name}`);
+                    
+                    // Use image if provided
+                    if (logo.image) {
+                        logoElement.innerHTML = `<img src="${logo.image}" alt="${logo.name}" />`;
+                    } else {
+                        logoElement.innerHTML = `<div style="color: #00ff00; font-weight: bold; text-align: center;">${logo.name}</div>`;
+                    }
+                    
+                    // Add drag event listeners
+                    logoElement.addEventListener('dragstart', handleDragStart);
+                    
+                    logoContainer.appendChild(logoElement);
+                });
                 
-                // Use image if provided
-                if (logo.image) {
-                    logoElement.innerHTML = `<img src="${logo.image}" alt="${logo.name}" />`;
-                } else {
-                    logoElement.innerHTML = `<div style="color: #00ff00; font-weight: bold; text-align: center;">${logo.name}</div>`;
+                // Create sequence slots
+                for (let i = 0; i < 4; i++) {
+                    const slot = document.createElement('div');
+                    slot.className = 'sequence-slot';
+                    slot.id = `slot-${i}`;
+                    slot.dataset.index = i;
+                    slot.setAttribute('aria-label', `Sequence slot ${i + 1}`);
+                    
+                    // Add drop event listeners
+                    slot.addEventListener('dragover', handleDragOver);
+                    slot.addEventListener('drop', handleDrop);
+                    slot.addEventListener('dragenter', handleDragEnter);
+                    slot.addEventListener('dragleave', handleDragLeave);
+                    
+                    sequenceContainer.appendChild(slot);
                 }
                 
-                // Add drag event listeners
-                logoElement.addEventListener('dragstart', handleDragStart);
+                // Add event listeners to buttons
+                checkBtn.addEventListener('click', checkSequence);
+                resetBtn.addEventListener('click', resetGame);
                 
-                logoContainer.appendChild(logoElement);
-            });
+                // Prevent form submission
+                sequenceForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                });
+            }
             
-            // Create sequence slots
-            for (let i = 0; i < 4; i++) {
-                const slot = document.createElement('div');
-                slot.className = 'sequence-slot';
-                slot.id = `slot-${i}`;
-                slot.dataset.index = i;
+            // Create floating particles effect
+            function createParticles() {
+                const particlesContainer = document.createElement('div');
+                particlesContainer.style.position = 'fixed';
+                particlesContainer.style.top = '0';
+                particlesContainer.style.left = '0';
+                particlesContainer.style.width = '100%';
+                particlesContainer.style.height = '100%';
+                particlesContainer.style.pointerEvents = 'none';
+                particlesContainer.style.zIndex = '0';
+                document.body.appendChild(particlesContainer);
                 
-                // Add drop event listeners
-                slot.addEventListener('dragover', handleDragOver);
-                slot.addEventListener('drop', handleDrop);
-                slot.addEventListener('dragenter', handleDragEnter);
-                slot.addEventListener('dragleave', handleDragLeave);
+                for (let i = 0; i < 20; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'particle';
+                    particle.style.left = Math.random() * 100 + 'vw';
+                    particle.style.animationDelay = Math.random() * 6 + 's';
+                    particle.style.animationDuration = (3 + Math.random() * 4) + 's';
+                    particle.style.opacity = Math.random() * 0.5;
+                    particlesContainer.appendChild(particle);
+                }
+            }
+            
+            // Drag and drop functions
+            function handleDragStart(e) {
+                e.dataTransfer.setData('text/plain', e.target.id);
+                setTimeout(() => {
+                    e.target.style.opacity = '0.4';
+                }, 0);
+            }
+            
+            function handleDragOver(e) {
+                e.preventDefault();
+            }
+            
+            function handleDrop(e) {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/plain');
+                const draggedElement = document.getElementById(id);
+                const slotIndex = parseInt(e.target.dataset.index);
                 
-                sequenceContainer.appendChild(slot);
-            }
-            
-            // Add event listeners to buttons
-            checkBtn.addEventListener('click', checkSequence);
-            resetBtn.addEventListener('click', resetGame);
-        }
-        
-        // Create floating particles effect
-        function createParticles() {
-            const particlesContainer = document.createElement('div');
-            particlesContainer.style.position = 'fixed';
-            particlesContainer.style.top = '0';
-            particlesContainer.style.left = '0';
-            particlesContainer.style.width = '100%';
-            particlesContainer.style.height = '100%';
-            particlesContainer.style.pointerEvents = 'none';
-            particlesContainer.style.zIndex = '0';
-            document.body.appendChild(particlesContainer);
-            
-            for (let i = 0; i < 20; i++) {
-                const particle = document.createElement('div');
-                particle.className = 'particle';
-                particle.style.left = Math.random() * 100 + 'vw';
-                particle.style.animationDelay = Math.random() * 6 + 's';
-                particle.style.animationDuration = (3 + Math.random() * 4) + 's';
-                particle.style.opacity = Math.random() * 0.5;
-                particlesContainer.appendChild(particle);
-            }
-        }
-        
-        // Drag and drop functions
-        function handleDragStart(e) {
-            e.dataTransfer.setData('text/plain', e.target.id);
-            setTimeout(() => {
-                e.target.style.opacity = '0.4';
-            }, 0);
-        }
-        
-        function handleDragOver(e) {
-            e.preventDefault();
-        }
-        
-        function handleDrop(e) {
-            e.preventDefault();
-            const id = e.dataTransfer.getData('text/plain');
-            const draggedElement = document.getElementById(id);
-            const slotIndex = parseInt(e.target.dataset.index);
-            
-            // Reset opacity
-            draggedElement.style.opacity = '1';
-            
-            // Remove highlight
-            e.target.classList.remove('highlight');
-            
-            // If slot already has a logo, return it to logo container
-            if (currentSequence[slotIndex]) {
-                const existingLogoId = `logo-${currentSequence[slotIndex]}`;
-                const existingLogo = document.getElementById(existingLogoId);
-                logoContainer.appendChild(existingLogo);
-            }
-            
-            // Add logo to slot
-            currentSequence[slotIndex] = parseInt(draggedElement.id.split('-')[1]);
-            e.target.appendChild(draggedElement);
-            e.target.classList.add('filled');
-            
-            // Clear feedback
-            feedback.textContent = '';
-            feedback.style.color = '#00ff00';
-        }
-        
-        function handleDragEnter(e) {
-            e.preventDefault();
-            e.target.classList.add('highlight');
-        }
-        
-        function handleDragLeave(e) {
-            e.target.classList.remove('highlight');
-        }
-        
-        // Check if sequence is correct
-        function checkSequence() {
-            // Check if all slots are filled
-            if (currentSequence.includes(null)) {
-                feedback.textContent = 'ALL SLOTS MUST BE FILLED...';
-                feedback.style.color = '#ff4444';
-                return;
-            }
-            
-            // Check if sequence matches
-            const isCorrect = JSON.stringify(currentSequence) === JSON.stringify(correctSequence);
-            
-            if (isCorrect) {
-                feedback.textContent = 'SEQUENCE VERIFIED... ACCESS GRANTED';
+                // Reset opacity
+                draggedElement.style.opacity = '1';
+                
+                // Remove highlight
+                e.target.classList.remove('highlight');
+                
+                // If slot already has a logo, return it to logo container
+                if (currentSequence[slotIndex]) {
+                    const existingLogoId = `logo-${currentSequence[slotIndex]}`;
+                    const existingLogo = document.getElementById(existingLogoId);
+                    logoContainer.appendChild(existingLogo);
+                }
+                
+                // Add logo to slot
+                currentSequence[slotIndex] = parseInt(draggedElement.id.split('-')[1]);
+                e.target.appendChild(draggedElement);
+                e.target.classList.add('filled');
+                
+                // Clear feedback
+                feedback.textContent = '';
                 feedback.style.color = '#00ff00';
-                videoContainer.style.display = 'block';
-                rewardVideo.play();
-                
-                // Add celebration effect
-                document.body.style.animation = 'glitch 0.3s infinite';
-                setTimeout(() => {
-                    document.body.style.animation = '';
-                }, 1000);
-            } else {
-                feedback.textContent = 'SEQUENCE REJECTED... TRY AGAIN';
-                feedback.style.color = '#ff4444';
-                
-                // Add error effect
-                document.body.style.animation = 'glitch 0.1s infinite';
-                setTimeout(() => {
-                    document.body.style.animation = '';
-                }, 500);
             }
-        }
-        
-        // Reset the game
-        function resetGame() {
-            // Clear sequence
-            currentSequence = [null, null, null, null];
             
-            // Move all logos back to logo container
-            const slots = document.querySelectorAll('.sequence-slot');
-            slots.forEach(slot => {
-                slot.classList.remove('filled');
-                while (slot.firstChild) {
-                    logoContainer.appendChild(slot.firstChild);
+            function handleDragEnter(e) {
+                e.preventDefault();
+                e.target.classList.add('highlight');
+            }
+            
+            function handleDragLeave(e) {
+                e.target.classList.remove('highlight');
+            }
+            
+            // Check if sequence is correct
+            function checkSequence() {
+                // Check if all slots are filled
+                if (currentSequence.includes(null)) {
+                    feedback.textContent = 'ALL SLOTS MUST BE FILLED...';
+                    feedback.style.color = '#ff4444';
+                    return;
                 }
-            });
+                
+                // Check if sequence matches
+                const isCorrect = JSON.stringify(currentSequence) === JSON.stringify(correctSequence);
+                
+                if (isCorrect) {
+                    feedback.textContent = 'SEQUENCE VERIFIED... ACCESS GRANTED';
+                    feedback.style.color = '#00ff00';
+                    videoContainer.style.display = 'block';
+                    rewardVideo.play();
+                    
+                    // Add celebration effect
+                    document.body.style.animation = 'glitch 0.3s infinite';
+                    setTimeout(() => {
+                        document.body.style.animation = '';
+                    }, 1000);
+                } else {
+                    feedback.textContent = 'SEQUENCE REJECTED... TRY AGAIN';
+                    feedback.style.color = '#ff4444';
+                    
+                    // Add error effect
+                    document.body.style.animation = 'glitch 0.1s infinite';
+                    setTimeout(() => {
+                        document.body.style.animation = '';
+                    }, 500);
+                }
+            }
             
-            // Clear feedback and hide video
-            feedback.textContent = '';
-            feedback.style.color = '#00ff00';
-            videoContainer.style.display = 'none';
-            rewardVideo.pause();
-            rewardVideo.currentTime = 0;
-        }
-        
-        // Initialize the game
-        initGame();
-    });
-</script>
+            // Reset the game
+            function resetGame() {
+                // Clear sequence
+                currentSequence = [null, null, null, null];
+                
+                // Move all logos back to logo container
+                const slots = document.querySelectorAll('.sequence-slot');
+                slots.forEach(slot => {
+                    slot.classList.remove('filled');
+                    while (slot.firstChild) {
+                        logoContainer.appendChild(slot.firstChild);
+                    }
+                });
+                
+                // Clear feedback and hide video
+                feedback.textContent = '';
+                feedback.style.color = '#00ff00';
+                videoContainer.style.display = 'none';
+                rewardVideo.pause();
+                rewardVideo.currentTime = 0;
+            }
+            
+            // Initialize the game
+            initGame();
+        });
+    </script>
+</body>
