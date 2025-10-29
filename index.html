@@ -1,614 +1,221 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Haunted Logo Sequence</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Courier New', monospace;
-        }
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Create floating particles
+        createParticles();
         
-        body {
-            background: #0a0a0a url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" opacity="0.1"><rect width="100" height="100" fill="none" stroke="%23333" stroke-width="2"/></svg>');
-            color: #00ff00;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 2rem;
-            position: relative;
-            overflow-x: hidden;
-        }
-
-        /* Animated background elements */
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: 
-                radial-gradient(circle at 20% 80%, rgba(255, 0, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 20%, rgba(0, 255, 0, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 40% 40%, rgba(0, 0, 255, 0.1) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: -1;
-        }
-
-        .glitch-text {
-            font-size: 3rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            position: relative;
-            text-shadow: 
-                0.05em 0 0 rgba(255, 0, 0, 0.75),
-                -0.025em -0.05em 0 rgba(0, 255, 0, 0.75),
-                0.025em 0.05em 0 rgba(0, 0, 255, 0.75);
-            animation: glitch 2s infinite;
-            margin-bottom: 1rem;
-        }
-
-        @keyframes glitch {
-            0% { transform: translate(0); }
-            20% { transform: translate(-2px, 2px); }
-            40% { transform: translate(-2px, -2px); }
-            60% { transform: translate(2px, 2px); }
-            80% { transform: translate(2px, -2px); }
-            100% { transform: translate(0); }
-        }
-
-        .container {
-            max-width: 900px;
-            width: 100%;
-            background: rgba(10, 10, 10, 0.9);
-            border: 2px solid #00ff00;
-            border-radius: 10px;
-            padding: 2rem;
-            box-shadow: 
-                0 0 20px rgba(0, 255, 0, 0.3),
-                inset 0 0 20px rgba(0, 255, 0, 0.1);
-            position: relative;
-            z-index: 1;
-        }
-
-        .container::before {
-            content: '';
-            position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, #ff0000, #00ff00, #0000ff, #ff0000);
-            border-radius: 12px;
-            z-index: -1;
-            opacity: 0.1;
-            animation: borderGlow 3s ease-in-out infinite;
-        }
-
-        @keyframes borderGlow {
-            0%, 100% { opacity: 0.1; }
-            50% { opacity: 0.3; }
-        }
-
-        .instructions {
-            text-align: center;
-            margin-bottom: 2rem;
-            font-size: 1.1rem;
-            line-height: 1.6;
-            background: rgba(0, 255, 0, 0.1);
-            padding: 1.5rem;
-            border-radius: 8px;
-            border: 1px solid #00ff00;
-            text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-        }
-
-        .warning {
-            color: #ff4444;
-            font-weight: bold;
-            animation: pulse 2s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .logo-container, .sequence-container {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 2rem;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .logo {
-            width: 140px;
-            height: 140px;
-            background: #1a1a1a;
-            border: 2px solid #333;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: grab;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .logo::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: linear-gradient(45deg, transparent, rgba(0, 255, 0, 0.1), transparent);
-            transform: rotate(45deg);
-            transition: all 0.6s ease;
-        }
-
-        .logo:hover {
-            border-color: #00ff00;
-            box-shadow: 
-                0 0 15px rgba(0, 255, 0, 0.5),
-                inset 0 0 15px rgba(0, 255, 0, 0.2);
-            transform: translateY(-5px) scale(1.05);
-        }
-
-        .logo:hover::before {
-            transform: rotate(45deg) translate(50%, 50%);
-        }
-
-        .logo img {
-            max-width: 80%;
-            max-height: 80%;
-            border-radius: 5px;
-            filter: grayscale(30%) contrast(120%);
-            transition: filter 0.3s ease;
-        }
-
-        .logo:hover img {
-            filter: grayscale(0%) contrast(140%) brightness(110%);
-        }
-
-        .sequence-slot {
-            width: 140px;
-            height: 140px;
-            border: 3px dashed #444;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.3s ease;
-            background: rgba(20, 20, 20, 0.8);
-            position: relative;
-        }
-
-        .sequence-slot::after {
-            content: '?';
-            font-size: 2rem;
-            color: #444;
-            position: absolute;
-        }
-
-        .sequence-slot.highlight {
-            border-color: #00ff00;
-            background: rgba(0, 255, 0, 0.1);
-            box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
-        }
-
-        .sequence-slot.highlight::after {
-            content: '↓';
-            color: #00ff00;
-            animation: bounce 1s infinite;
-        }
-
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        .sequence-slot.filled::after {
-            content: none;
-        }
-
-        .controls {
-            display: flex;
-            justify-content: center;
-            gap: 1.5rem;
-            margin-bottom: 2rem;
-        }
-
-        button {
-            padding: 1rem 2rem;
-            border: none;
-            border-radius: 5px;
-            background: linear-gradient(45deg, #ff0000, #990000);
-            color: white;
-            font-size: 1.1rem;
-            font-weight: bold;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        button::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-            transition: left 0.5s;
-        }
-
-        button:hover::before {
-            left: 100%;
-        }
-
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(255, 0, 0, 0.4);
-            background: linear-gradient(45deg, #ff4444, #bb0000);
-        }
-
-        button:active {
-            transform: translateY(0);
-        }
-
-        button#reset-btn {
-            background: linear-gradient(45deg, #333, #666);
-        }
-
-        button#reset-btn:hover {
-            background: linear-gradient(45deg, #444, #777);
-            box-shadow: 0 5px 15px rgba(0, 255, 0, 0.4);
-        }
-
-        .feedback {
-            text-align: center;
-            font-size: 1.3rem;
-            margin-bottom: 1.5rem;
-            min-height: 40px;
-            font-weight: bold;
-            text-shadow: 0 0 10px currentColor;
-            padding: 1rem;
-            border-radius: 5px;
-            background: rgba(0, 0, 0, 0.5);
-        }
-
-        .video-container {
-            display: none;
-            margin-top: 2rem;
-            text-align: center;
-        }
-
-        .success-message {
-            font-size: 1.8rem;
-            margin-bottom: 1.5rem;
-            color: #00ff00;
-            text-shadow: 0 0 20px #00ff00;
-            animation: glow 2s ease-in-out infinite alternate;
-        }
-
-        @keyframes glow {
-            from { text-shadow: 0 0 10px #00ff00, 0 0 20px #00ff00; }
-            to { text-shadow: 0 0 20px #00ff00, 0 0 30px #00ff00, 0 0 40px #00ff00; }
-        }
-
-        video {
-            max-width: 100%;
-            border-radius: 10px;
-            border: 2px solid #00ff00;
-            box-shadow: 0 0 30px rgba(0, 255, 0, 0.5);
-        }
-
-        /* Floating particles */
-        .particle {
-            position: fixed;
-            width: 4px;
-            height: 4px;
-            background: #00ff00;
-            border-radius: 50%;
-            pointer-events: none;
-            z-index: 0;
-            animation: float 6s infinite linear;
-        }
-
-        @keyframes float {
-            0% { transform: translateY(100vh) rotate(0deg); opacity: 0; }
-            10% { opacity: 1; }
-            90% { opacity: 1; }
-            100% { transform: translateY(-100px) rotate(360deg); opacity: 0; }
-        }
-
-        @media (max-width: 768px) {
-            .logo, .sequence-slot {
-                width: 120px;
-                height: 120px;
+        // Define logos - FIXED SYNTAX
+        const logos = [
+            { 
+                id: 1, 
+                name: 'Cult Symbol', 
+                image: 'logo1.png'
+            },
+            { 
+                id: 2, 
+                name: 'Ancient Rune', 
+                image: 'logo2.png'
+            },
+            { 
+                id: 3, 
+                name: 'Mystery Mark', 
+                image: 'logo3.png'
+            },
+            { 
+                id: 4, 
+                name: 'Haunted Icon', 
+                image: 'logo4.png'
             }
-            
-            .glitch-text {
-                font-size: 2rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .logo, .sequence-slot {
-                width: 100px;
-                height: 100px;
-            }
-            
-            .container {
-                padding: 1rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="glitch-text">Haunted Sequence</div>
-    
-    <div class="container">
-        <div class="instructions">
-            <p>ARRANGE THE SYMBOLS IN THE CORRECT SEQUENCE TO REVEAL THE MESSAGE...</p>
-            <p class="warning">WARNING: WRONG SEQUENCES MAY HAVE CONSEQUENCES</p>
-        </div>
+        ];
         
-        <div class="logo-container" id="logo-container">
-            <!-- Logos will be added here by JavaScript -->
-        </div>
+        // Correct sequence (change this to your desired order)
+        const correctSequence = [1, 2, 3, 4];
         
-        <div class="sequence-container" id="sequence-container">
-            <!-- Sequence slots will be added here by JavaScript -->
-        </div>
+        // DOM elements
+        const logoContainer = document.getElementById('logo-container');
+        const sequenceContainer = document.getElementById('sequence-container');
+        const checkBtn = document.getElementById('check-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const feedback = document.getElementById('feedback');
+        const videoContainer = document.getElementById('video-container');
+        const rewardVideo = document.getElementById('reward-video');
         
-        <div class="feedback" id="feedback"></div>
+        // Track current sequence
+        let currentSequence = [null, null, null, null];
         
-        <div class="controls">
-            <button id="check-btn">VERIFY SEQUENCE</button>
-            <button id="reset-btn">RESET</button>
-        </div>
-        
-        <div class="video-container" id="video-container">
-            <div class="success-message">ACCESS GRANTED... THE TRUTH AWAITS</div>
-            <video id="reward-video" controls>
-                <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4" type="video/mp4">
-                Your browser does not support the video tag.
-            </video>
-        </div>
-    </div>
-
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            // Create floating particles
-            createParticles();
-            
-            // Define logos - REPLACE THESE WITH YOUR ACTUAL LOGOS
-            const logos = [
-               const logos = [
-    { 
-        id: 1, 
-        name: 'Cult Symbol', 
-        image: 'logo1.png'
-    },
-    { 
-        id: 2, 
-        name: 'Ancient Rune', 
-        image: 'logo2.png'
-    },
-    { 
-        id: 3, 
-        name: 'Mystery Mark', 
-        image: 'logo3.png'
-    },
-    { 
-        id: 4, 
-        name: 'Haunted Icon', 
-        image: 'logo4.png'
-    }
-            ];
-            
-            // Correct sequence (change this to your desired order)
-            const correctSequence = [1, 2, 3, 4];
-            
-            // DOM elements
-            const logoContainer = document.getElementById('logo-container');
-            const sequenceContainer = document.getElementById('sequence-container');
-            const checkBtn = document.getElementById('check-btn');
-            const resetBtn = document.getElementById('reset-btn');
-            const feedback = document.getElementById('feedback');
-            const videoContainer = document.getElementById('video-container');
-            const rewardVideo = document.getElementById('reward-video');
-            
-            // Track current sequence
-            let currentSequence = [null, null, null, null];
-            
-            // Initialize the game
-            function initGame() {
-                // Create logo elements
-                logos.forEach(logo => {
-                    const logoElement = document.createElement('div');
-                    logoElement.className = 'logo';
-                    logoElement.id = `logo-${logo.id}`;
-                    logoElement.draggable = true;
-                    
-                    // Use image if provided
-                    if (logo.image) {
-                        logoElement.innerHTML = `<img src="${logo.image}" alt="${logo.name}" />`;
-                    } else {
-                        logoElement.innerHTML = `<div style="color: #00ff00; font-weight: bold; text-align: center;">${logo.name}</div>`;
-                    }
-                    
-                    // Add drag event listeners
-                    logoElement.addEventListener('dragstart', handleDragStart);
-                    
-                    logoContainer.appendChild(logoElement);
-                });
+        // Initialize the game
+        function initGame() {
+            // Create logo elements
+            logos.forEach(logo => {
+                const logoElement = document.createElement('div');
+                logoElement.className = 'logo';
+                logoElement.id = `logo-${logo.id}`;
+                logoElement.draggable = true;
                 
-                // Create sequence slots
-                for (let i = 0; i < 4; i++) {
-                    const slot = document.createElement('div');
-                    slot.className = 'sequence-slot';
-                    slot.id = `slot-${i}`;
-                    slot.dataset.index = i;
-                    
-                    // Add drop event listeners
-                    slot.addEventListener('dragover', handleDragOver);
-                    slot.addEventListener('drop', handleDrop);
-                    slot.addEventListener('dragenter', handleDragEnter);
-                    slot.addEventListener('dragleave', handleDragLeave);
-                    
-                    sequenceContainer.appendChild(slot);
-                }
-                
-                // Add event listeners to buttons
-                checkBtn.addEventListener('click', checkSequence);
-                resetBtn.addEventListener('click', resetGame);
-            }
-            
-            // Create floating particles effect
-            function createParticles() {
-                const particlesContainer = document.createElement('div');
-                particlesContainer.style.position = 'fixed';
-                particlesContainer.style.top = '0';
-                particlesContainer.style.left = '0';
-                particlesContainer.style.width = '100%';
-                particlesContainer.style.height = '100%';
-                particlesContainer.style.pointerEvents = 'none';
-                particlesContainer.style.zIndex = '0';
-                document.body.appendChild(particlesContainer);
-                
-                for (let i = 0; i < 20; i++) {
-                    const particle = document.createElement('div');
-                    particle.className = 'particle';
-                    particle.style.left = Math.random() * 100 + 'vw';
-                    particle.style.animationDelay = Math.random() * 6 + 's';
-                    particle.style.animationDuration = (3 + Math.random() * 4) + 's';
-                    particle.style.opacity = Math.random() * 0.5;
-                    particlesContainer.appendChild(particle);
-                }
-            }
-            
-            // Drag and drop functions
-            function handleDragStart(e) {
-                e.dataTransfer.setData('text/plain', e.target.id);
-                setTimeout(() => {
-                    e.target.style.opacity = '0.4';
-                }, 0);
-            }
-            
-            function handleDragOver(e) {
-                e.preventDefault();
-            }
-            
-            function handleDrop(e) {
-                e.preventDefault();
-                const id = e.dataTransfer.getData('text/plain');
-                const draggedElement = document.getElementById(id);
-                const slotIndex = parseInt(e.target.dataset.index);
-                
-                // Reset opacity
-                draggedElement.style.opacity = '1';
-                
-                // Remove highlight
-                e.target.classList.remove('highlight');
-                
-                // If slot already has a logo, return it to logo container
-                if (currentSequence[slotIndex]) {
-                    const existingLogoId = `logo-${currentSequence[slotIndex]}`;
-                    const existingLogo = document.getElementById(existingLogoId);
-                    logoContainer.appendChild(existingLogo);
-                }
-                
-                // Add logo to slot
-                currentSequence[slotIndex] = parseInt(draggedElement.id.split('-')[1]);
-                e.target.appendChild(draggedElement);
-                e.target.classList.add('filled');
-                
-                // Clear feedback
-                feedback.textContent = '';
-                feedback.style.color = '#00ff00';
-            }
-            
-            function handleDragEnter(e) {
-                e.preventDefault();
-                e.target.classList.add('highlight');
-            }
-            
-            function handleDragLeave(e) {
-                e.target.classList.remove('highlight');
-            }
-            
-            // Check if sequence is correct
-            function checkSequence() {
-                // Check if all slots are filled
-                if (currentSequence.includes(null)) {
-                    feedback.textContent = 'ALL SLOTS MUST BE FILLED...';
-                    feedback.style.color = '#ff4444';
-                    return;
-                }
-                
-                // Check if sequence matches
-                const isCorrect = JSON.stringify(currentSequence) === JSON.stringify(correctSequence);
-                
-                if (isCorrect) {
-                    feedback.textContent = 'SEQUENCE VERIFIED... ACCESS GRANTED';
-                    feedback.style.color = '#00ff00';
-                    videoContainer.style.display = 'block';
-                    rewardVideo.play();
-                    
-                    // Add celebration effect
-                    document.body.style.animation = 'glitch 0.3s infinite';
-                    setTimeout(() => {
-                        document.body.style.animation = '';
-                    }, 1000);
+                // Use image if provided
+                if (logo.image) {
+                    logoElement.innerHTML = `<img src="${logo.image}" alt="${logo.name}" />`;
                 } else {
-                    feedback.textContent = 'SEQUENCE REJECTED... TRY AGAIN';
-                    feedback.style.color = '#ff4444';
-                    
-                    // Add error effect
-                    document.body.style.animation = 'glitch 0.1s infinite';
-                    setTimeout(() => {
-                        document.body.style.animation = '';
-                    }, 500);
+                    logoElement.innerHTML = `<div style="color: #00ff00; font-weight: bold; text-align: center;">${logo.name}</div>`;
                 }
+                
+                // Add drag event listeners
+                logoElement.addEventListener('dragstart', handleDragStart);
+                
+                logoContainer.appendChild(logoElement);
+            });
+            
+            // Create sequence slots
+            for (let i = 0; i < 4; i++) {
+                const slot = document.createElement('div');
+                slot.className = 'sequence-slot';
+                slot.id = `slot-${i}`;
+                slot.dataset.index = i;
+                
+                // Add drop event listeners
+                slot.addEventListener('dragover', handleDragOver);
+                slot.addEventListener('drop', handleDrop);
+                slot.addEventListener('dragenter', handleDragEnter);
+                slot.addEventListener('dragleave', handleDragLeave);
+                
+                sequenceContainer.appendChild(slot);
             }
             
-            // Reset the game
-            function resetGame() {
-                // Clear sequence
-                currentSequence = [null, null, null, null];
-                
-                // Move all logos back to logo container
-                const slots = document.querySelectorAll('.sequence-slot');
-                slots.forEach(slot => {
-                    slot.classList.remove('filled');
-                    while (slot.firstChild) {
-                        logoContainer.appendChild(slot.firstChild);
-                    }
-                });
-                
-                // Clear feedback and hide video
-                feedback.textContent = '';
+            // Add event listeners to buttons
+            checkBtn.addEventListener('click', checkSequence);
+            resetBtn.addEventListener('click', resetGame);
+        }
+        
+        // Create floating particles effect
+        function createParticles() {
+            const particlesContainer = document.createElement('div');
+            particlesContainer.style.position = 'fixed';
+            particlesContainer.style.top = '0';
+            particlesContainer.style.left = '0';
+            particlesContainer.style.width = '100%';
+            particlesContainer.style.height = '100%';
+            particlesContainer.style.pointerEvents = 'none';
+            particlesContainer.style.zIndex = '0';
+            document.body.appendChild(particlesContainer);
+            
+            for (let i = 0; i < 20; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.animationDelay = Math.random() * 6 + 's';
+                particle.style.animationDuration = (3 + Math.random() * 4) + 's';
+                particle.style.opacity = Math.random() * 0.5;
+                particlesContainer.appendChild(particle);
+            }
+        }
+        
+        // Drag and drop functions
+        function handleDragStart(e) {
+            e.dataTransfer.setData('text/plain', e.target.id);
+            setTimeout(() => {
+                e.target.style.opacity = '0.4';
+            }, 0);
+        }
+        
+        function handleDragOver(e) {
+            e.preventDefault();
+        }
+        
+        function handleDrop(e) {
+            e.preventDefault();
+            const id = e.dataTransfer.getData('text/plain');
+            const draggedElement = document.getElementById(id);
+            const slotIndex = parseInt(e.target.dataset.index);
+            
+            // Reset opacity
+            draggedElement.style.opacity = '1';
+            
+            // Remove highlight
+            e.target.classList.remove('highlight');
+            
+            // If slot already has a logo, return it to logo container
+            if (currentSequence[slotIndex]) {
+                const existingLogoId = `logo-${currentSequence[slotIndex]}`;
+                const existingLogo = document.getElementById(existingLogoId);
+                logoContainer.appendChild(existingLogo);
+            }
+            
+            // Add logo to slot
+            currentSequence[slotIndex] = parseInt(draggedElement.id.split('-')[1]);
+            e.target.appendChild(draggedElement);
+            e.target.classList.add('filled');
+            
+            // Clear feedback
+            feedback.textContent = '';
+            feedback.style.color = '#00ff00';
+        }
+        
+        function handleDragEnter(e) {
+            e.preventDefault();
+            e.target.classList.add('highlight');
+        }
+        
+        function handleDragLeave(e) {
+            e.target.classList.remove('highlight');
+        }
+        
+        // Check if sequence is correct
+        function checkSequence() {
+            // Check if all slots are filled
+            if (currentSequence.includes(null)) {
+                feedback.textContent = 'ALL SLOTS MUST BE FILLED...';
+                feedback.style.color = '#ff4444';
+                return;
+            }
+            
+            // Check if sequence matches
+            const isCorrect = JSON.stringify(currentSequence) === JSON.stringify(correctSequence);
+            
+            if (isCorrect) {
+                feedback.textContent = 'SEQUENCE VERIFIED... ACCESS GRANTED';
                 feedback.style.color = '#00ff00';
-                videoContainer.style.display = 'none';
-                rewardVideo.pause();
-                rewardVideo.currentTime = 0;
+                videoContainer.style.display = 'block';
+                rewardVideo.play();
+                
+                // Add celebration effect
+                document.body.style.animation = 'glitch 0.3s infinite';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 1000);
+            } else {
+                feedback.textContent = 'SEQUENCE REJECTED... TRY AGAIN';
+                feedback.style.color = '#ff4444';
+                
+                // Add error effect
+                document.body.style.animation = 'glitch 0.1s infinite';
+                setTimeout(() => {
+                    document.body.style.animation = '';
+                }, 500);
             }
+        }
+        
+        // Reset the game
+        function resetGame() {
+            // Clear sequence
+            currentSequence = [null, null, null, null];
             
-            // Initialize the game
-            initGame();
-        });
-    </script>
-</body>
-</html>
+            // Move all logos back to logo container
+            const slots = document.querySelectorAll('.sequence-slot');
+            slots.forEach(slot => {
+                slot.classList.remove('filled');
+                while (slot.firstChild) {
+                    logoContainer.appendChild(slot.firstChild);
+                }
+            });
+            
+            // Clear feedback and hide video
+            feedback.textContent = '';
+            feedback.style.color = '#00ff00';
+            videoContainer.style.display = 'none';
+            rewardVideo.pause();
+            rewardVideo.currentTime = 0;
+        }
+        
+        // Initialize the game
+        initGame();
+    });
+</script>
